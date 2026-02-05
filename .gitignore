@@ -1,0 +1,22 @@
+# Archivos de planificación internos
+plan.md
+tareas.md
+
+# Workflows del agente
+.agent/workflows/git.md
+
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Directorios de dependencias
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db

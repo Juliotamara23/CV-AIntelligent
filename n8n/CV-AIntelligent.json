@@ -1,0 +1,379 @@
+{
+  "name": "CV-AIntelligent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "streaming"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        288,
+        496
+      ],
+      "id": "868ddf53-6cb5-46a8-9f99-4479e14348bf",
+      "name": "When chat message received",
+      "webhookId": "954934b1-bdb5-4b3c-ad71-aa4092aecac0"
+    },
+    {
+      "parameters": {
+        "resource": "user",
+        "owner": {
+          "__rl": true,
+          "value": "={{ $json.extracted_github_user }}",
+          "mode": "name"
+        }
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1504,
+        112
+      ],
+      "id": "39134479-5ee4-4dcb-b697-056d100e93d0",
+      "name": "Get a user's repositories",
+      "webhookId": "30f6a091-e728-4940-8a3f-5a221d2b03f5",
+      "credentials": {
+        "githubApi": {
+          "id": "H6Ga7syz9Oy4zlCB",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Responsabilidad: Extraer el username de GitHub desde el input del chat o la salida de la IA\nfor (const item of $input.all()) {\n  // Buscamos en chatInput (lo que escribió el usuario) \n  // o en output (lo que escribió la IA), priorizando la entrada del usuario.\n  const textToSearch = item.json.chatInput || item.json.output || \"\";\n  \n  // Regex mejorado: busca el patrón de github.com/ seguido del nombre de usuario\n  // Captura el nombre de usuario en el primer grupo\n  const githubRegex = /github\\.com\\/([a-zA-Z0-9-]{1,39})/i;\n  const match = textToSearch.match(githubRegex);\n\n  if (match && match[1]) {\n    item.json.extracted_github_user = match[1];\n    item.json.has_github = true;\n  } else {\n    item.json.extracted_github_user = null;\n    item.json.has_github = false;\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        48
+      ],
+      "id": "415b2cdd-acf0-4851-b0c7-f12ecccbdb0d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Eres CV-AIntelligent, un asistente experto en optimización de perfiles técnicos.\nTu objetivo inicial es presentarte cordialmente y solicitar al usuario la URL de su perfil de GitHub para comenzar el análisis.\n\nREGLA CRÍTICA:\nSi el usuario no te proporciona la url de su github, debes indicarle insistiendo en que es necesaria para continuar.\n\nRESPUESTA ESPERADA POR PARTE DEL USUARIO:\nhttps://github.com/{nombre_cuenta}\nNOTA: el usuario puede decorar la respuesta tanto como quiera lo importante el la url",
+          "maxIterations": 3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        576,
+        496
+      ],
+      "id": "f21efc8d-17c6-4e58-ac78-213b914c5785",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        528,
+        688
+      ],
+      "id": "fe3d2394-89fd-4765-a33c-f5d169bd401f",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VuMbPYanv9iroKXw",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "message": "¡Hola! Es un gusto saludarte. Soy CV-AIntelligent, tu asistente experto en la optimización de perfiles técnicos y trayectorias profesionales en el sector tecnológico.\n\nMi objetivo es ayudarte a potenciar tu presencia digital para que destaques ante reclutadores y empresas de alto nivel. Para comenzar con un análisis detallado de tus habilidades, proyectos y contribuciones, por favor proporcióname la URL de tu perfil de GitHub.\n\n¡Estoy listo para empezar cuando tú lo estés!",
+        "options": {
+          "memoryConnection": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.1,
+      "position": [
+        784,
+        48
+      ],
+      "id": "9ae84f1b-7136-42d8-bf93-ca397a91f86e",
+      "name": "Chat",
+      "webhookId": "4cce1ff8-8bd9-4073-9b72-612f40d33ae5",
+      "executeOnce": true
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        864,
+        288
+      ],
+      "id": "528c0cb7-6049-41db-8c19-e4f6768adc4a",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "message": "bien hecho!",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.1,
+      "position": [
+        1760,
+        160
+      ],
+      "id": "f794eec5-1ce1-457e-b36f-ea90e43d55a7",
+      "name": "Chat1",
+      "webhookId": "4511bf30-d8a4-45d3-9017-84f5763ecaa9"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4d25dfc6-5350-4b17-93e9-7271422b64a3",
+              "leftValue": "={{ $json.has_github }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1248,
+        48
+      ],
+      "id": "3ca7b252-2f38-40ef-a09f-16a06da9e9f6",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        -64
+      ],
+      "id": "d7ef782e-bd47-4e43-8391-2c06e64e6624",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "message": "bien hecho!",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        480
+      ],
+      "id": "44610eb1-4f6c-40d3-ad83-8c113a66240f",
+      "name": "Chat2",
+      "webhookId": "4511bf30-d8a4-45d3-9017-84f5763ecaa9"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        688,
+        720
+      ],
+      "id": "0bcd516a-db12-4a3d-8e64-79b1c70de9e9",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "resource": "user",
+        "owner": {
+          "__rl": true,
+          "value": "={{ $json.extracted_github_user }}",
+          "mode": "name"
+        }
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1072,
+        496
+      ],
+      "id": "ca93b244-2b66-4b29-a172-069ed64454d6",
+      "name": "Get a user's repositories1",
+      "webhookId": "30f6a091-e728-4940-8a3f-5a221d2b03f5",
+      "credentials": {
+        "githubApi": {
+          "id": "H6Ga7syz9Oy4zlCB",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Responsabilidad: Extraer el username de GitHub desde el input del chat o la salida de la IA\nfor (const item of $input.all()) {\n  // Buscamos en chatInput (lo que escribió el usuario) \n  // o en output (lo que escribió la IA), priorizando la entrada del usuario.\n  const textToSearch = item.json.chatInput || item.json.output || \"\";\n  \n  // Regex mejorado: busca el patrón de github.com/ seguido del nombre de usuario\n  // Captura el nombre de usuario en el primer grupo\n  const githubRegex = /github\\.com\\/([a-zA-Z0-9-]{1,39})/i;\n  const match = textToSearch.match(githubRegex);\n\n  if (match && match[1]) {\n    item.json.extracted_github_user = match[1];\n    item.json.has_github = true;\n  } else {\n    item.json.extracted_github_user = null;\n    item.json.has_github = false;\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        496
+      ],
+      "id": "5a7df3e2-971d-4ef3-909a-a1d38bb6ad7f",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a user's repositories": {
+      "main": [
+        [
+          {
+            "node": "Chat1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Chat",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a user's repositories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Get a user's repositories1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "209051d8-9580-4f08-91a3-94bee7191842",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c9679bb0ef3e09745ced1e7ef2b596744bbd4242cd22d4ea9d3fed4a688906b3"
+  },
+  "id": "ZjIW1jrQKE2WVJ2OA5rNW",
+  "tags": []
+}
