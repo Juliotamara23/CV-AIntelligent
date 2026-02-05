@@ -56,7 +56,7 @@ flowchart TD
 
 1. **Clona el repositorio:**
    ```bash
-   git clone https://github.com/juliotamara23/CV-AIntelligent.git
+   git clone https://github.com/Juliotamara23/CV-AIntelligent.git
    cd CV-AIntelligent
    ```
 
